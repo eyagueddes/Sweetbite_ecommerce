@@ -5,45 +5,90 @@ import ProductGrid from "./components/ProductGrid"
 import About from "./components/About"
 import Contact from "./components/Contact"
 import CartDrawer from "./components/CartDrawer"
-
-interface Product {
-  id: number
-  name: string
-  price: number
-  description: string
-  image: string
-}
+import { getAllProducts } from "./lib/src/services/productService"
+import { Product } from "./lib/supabase"
 
 export default function App() {
-  const [products] = useState<Product[]>([
-    { id: 1, name: "Cookie Chocolat Chunk", price: 6.5, description: "80g", image: "https://images.pexels.com/photos/230325/pexels-photo-230325.jpeg?auto=compress&cs=tinysrgb&w=400" },
-    { id: 2, name: "Cookie Pistache & Caramel", price: 7.0, description: "Caramel beurre salé", image: "https://imgs.search.brave.com/Hd1pQxqsW7wnWsw89HqTfn5ewU-N4R3zG1d58cCqZHY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9sZXNy/ZWNldHRlc2RlbWVs/YW5pZS5jb20vd3At/Y29udGVudC91cGxv/YWRzLzIwMjIvMDcv/Y29va2llcy1waXN0/YWNoZS02LXBob3Rv/Z3JhcGhlLWN1bGlu/YWlyZS1tZWxhbmll/LXJvdXNzZWxsZS04/NDR4MTUwMC5qcGc" },
- {
-    id: 4,
-    name: "Cookie Red Velvet",
-    price: 7.5,
-    description: "Cream cheese frosting tunisien",
-    image: "https://imgs.search.brave.com/yPULA8Jv0Rg9bzsd01kJZijrtAERfBkTdplcd9UjbBQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9ob3Vz/ZW9mbmFzaGVhdHMu/Y29tL3dwLWNvbnRl/bnQvdXBsb2Fkcy8y/MDE5LzAxL1JlZC1W/ZWx2ZXQtV2hpdGUt/Q2hvY29sYXRlLUNo/aXAtQ29va2llcy0x/MS5qcGc"
-  },
-    { id: 4, name: "Cookie Red Velvet", price: 7.5, description: "Cream cheese", image: "https://images.pexels.com/photos/1028708/pexels-photo-1028708.jpeg?auto=compress&cs=tinysrgb&w=400" },
-  ])
-
-  const [cart, setCart] = useState<{product: Product, qty: number}[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([])
   const [cartOpen, setCartOpen] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
+  const [cartTotal, setCartTotal] = useState(0)
 
-  const addToCart = (id: number) => {
-    setCart(c => {
-      const existing = c.find(item => item.product.id === id)
-      if (existing) {
-        return c.map(item => item.product.id === id ? {...item, qty: item.qty + 1} : item)
+  // Load products from Supabase
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await getAllProducts()
+        setProducts(data)
+      } catch (err) {
+        setError('Failed to load products')
+        console.error(err)
+      } finally {
+        setLoading(false)
       }
-      const product = products.find(p => p.id === id)!
-      return [...c, {product, qty: 1}]
-    })
+    }
+    loadProducts()
+  }, [])
+
+  useEffect(() => {
+    setCartCount(cart.reduce((acc, item) => acc + item.quantity, 0))
+    setCartTotal(
+      cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
+    )
+  }, [cart])
+
+  const addToCart = (product: Product) => {
+    const existingItem = cart.find(item => item.product.id === product.id)
+    if (existingItem) {
+      setCart(cart.map(item =>
+        item.product.id === product.id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ))
+    } else {
+      setCart([...cart, { product, quantity: 1 }])
+    }
   }
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.qty, 0)
-  const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
+  const updateQuantity = (productId: number, quantity: number) => {
+    if (quantity === 0) {
+      setCart(cart.filter(item => item.product.id !== productId))
+    } else {
+      setCart(cart.map(item =>
+        item.product.id === productId ? { ...item, quantity } : item
+      ))
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading delicious cookies...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -54,7 +99,13 @@ export default function App() {
         <About />
         <Contact />
       </main>
-      <CartDrawer cart={cart} total={cartTotal} open={cartOpen} onClose={() => setCartOpen(false)} setCart={setCart} />
+      <CartDrawer 
+        cart={cart} 
+        total={cartTotal} 
+        open={cartOpen}
+        onClose={() => setCartOpen(false)} 
+        setCart={setCart} 
+      />
     </>
   )
 }

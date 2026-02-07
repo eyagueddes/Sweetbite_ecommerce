@@ -1,0 +1,23 @@
+@import "tailwindcss"; 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+npm run dev 
+
+@layer base {
+  body { @apply bg-orange-50 text-gray-800; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+}
+
+html {
+  scroll-behavior: smooth;  /* ← Smooth animation */
+}
+
+section {
+  scroll-margin-top: 5rem;  /* ← Space for sticky header */
+}

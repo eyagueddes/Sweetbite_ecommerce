@@ -1,16 +1,19 @@
 const Hero = () => (
-  <section className="relative overflow-hidden bg-gradient-to-br from-orange-100 via-orange-50 to-yellow-50 pt-24 pb-20">
-    <div className="max-w-6xl mx-auto px-4 text-center">
-      <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-orange-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent mb-6 leading-tight">
-        Cookies Frais
+  <section className="relative overflow-hidden section-bg-pink pt-24 pb-20">
+    <div className="max-w-7xl mx-auto px-4 text-center">
+      <div className="badge mb-6">
+        This Week Only
+      </div>
+      <h1 className="text-6xl md:text-8xl font-black text-black mb-6 leading-tight">
+        Fresh Baked
         <br />
-        <span className="text-4xl md:text-5xl">Livrés en Tunisie</span>
+        Cookies Daily
       </h1>
-      <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-        Artisanaux, croustillants, irrésistibles. Payez en TND, livré en 48h partout en Tunisie.
+      <p className="text-xl text-gray-800 mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
+        Handcrafted cookies delivered fresh. New flavors every Monday. Order now in TND.
       </p>
-      <a href="#products" className="btn-primary text-xl px-12 py-4 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300 inline-block">
-        Voir nos cookies →
+      <a href="#products" className="btn-primary inline-block">
+        Order Now
       </a>
     </div>
   </section>
